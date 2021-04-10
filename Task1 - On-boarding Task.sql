@@ -1,94 +1,105 @@
-use Keys
-go
+USE Keys
+GO
 
----Task1 
+---TASk1 
 
 --- a. Display a list of all property names and their property id¡¯s for Owner Id: 1426. 
 
-select p.Name as PropertyName, p.Id as PropertyID, 
-from dbo.Property p
-inner join dbo.OwnerProperty op
-on p.Id = op.PropertyId
-where op.OwnerId = 1426
+SELECT p.Name AS PropertyName, p.Id AS PropertyID
+FROM dbo.Property p
+INNER JOIN dbo.OwnerProperty op
+ON p.Id = op.PropertyId
+WHERE op.OwnerId = 1426
 
 --- b. Display the current home value for each property in question a). 
 
-select p.Name as PropertyName, p.Id as PropertyID, pv.Value as HomeValue, op.OwnerId
-from dbo.Property p
-inner join dbo.OwnerProperty op
-on p.Id = op.PropertyId
-inner join dbo.PropertyHomeValue pv
-on pv.PropertyId = op.PropertyId
-where op.OwnerId = 1426 and pv.IsActive = 1
+SELECT p.Name AS PropertyName, p.Id AS PropertyID, pv.Value AS HomeValue, op.OwnerId
+FROM dbo.Property p
+INNER JOIN dbo.OwnerProperty op
+ON p.Id = op.PropertyId
+INNER JOIN dbo.PropertyHomeValue pv
+ON pv.PropertyId = op.PropertyId
+WHERE op.OwnerId = 1426 and pv.IsActive = 1
 
---- c i. Using rental payment amount, rental payment frequency, tenant start date and tenant end date to write a query that returns the sum of all payments from start date to end date. 
+--- c i. Using rental payment amount, rental payment frequency, tenant start date and tenant end date to write a query that returns the sum of all payments FROM start date to end date. 
 
-select p.Name as PropertyName, p.Id as PropertyID, pv.Value as HomeValue, tp.PaymentAmount, tp.PaymentFrequencyId, tp.StartDate, tp.EndDate,op.OwnerId, 
-case
-	when tp.PaymentFrequencyId = 1
-	then 
+SELECT p.Name AS PropertyName, p.Id AS PropertyID, pv.Value AS HomeValue, tp.PaymentAmount, tp.StartDate, tp.EndDate, op.OwnerId, 
+
+CASE
+
+	WHEN tp.PaymentFrequencyId = 1 THEN 'Weekly'
+
+	WHEN tp.PaymentFrequencyId = 2 THEN 'Fortnightly'
+
+	WHEN tp.PaymentFrequencyId = 3 THEN 'Monthly'
+End
+AS 'PaymentFrequency',
+
+CASE
+	WHEN tp.PaymentFrequencyId = 1
+	THEN 
 			(datediff(week, StartDate, EndDate)) * PaymentAmount
-	when tp.PaymentFrequencyId = 2
-	then			
+	WHEN tp.PaymentFrequencyId = 2
+	THEN			
 			(DATEDIFF(week, StartDate, EndDate))/2 * PaymentAmount
-	when tp.PaymentFrequencyId = 3
-	then			
+	WHEN tp.PaymentFrequencyId = 3
+	THEN			
 			(DATEDIFF(month, StartDate, EndDate)) * PaymentAmount
 END
 AS 'Sum'
 
-from dbo.Property p
-inner join dbo.OwnerProperty op
-on p.Id = op.PropertyId
-inner join dbo.PropertyHomeValue pv
-on pv.PropertyId = op.PropertyId
-inner join dbo.TenantProperty tp
-on tp.PropertyId = op.PropertyId
-where op.OwnerId = 1426 and pv.IsActive = 1
+FROM dbo.Property p
+INNER JOIN dbo.OwnerProperty op
+ON p.Id = op.PropertyId
+INNER JOIN dbo.PropertyHomeValue pv
+ON pv.PropertyId = op.PropertyId
+INNER JOIN dbo.TenantProperty tp
+ON tp.PropertyId = op.PropertyId
+WHERE op.OwnerId = 1426 and pv.IsActive = 1
 
---- c.i Display the yield. 
+--- c.ii Display the yield. 
 
-select p.Name as PropertyName, p.Id as PropertyID, f.Yield, op.OwnerId
-from dbo.Property p
-inner join dbo.OwnerProperty op
-on p.Id = op.PropertyId
-inner join dbo.PropertyHomeValue pv
-on pv.PropertyId = op.PropertyId
-inner join dbo.PropertyFinance f
-on f.PropertyId = pv.PropertyId
-where op.OwnerId = 1426 and pv.IsActive = 1
+SELECT p.Name AS PropertyName, p.Id AS PropertyID, f.Yield, op.OwnerId
+FROM dbo.Property p
+INNER JOIN dbo.OwnerProperty op
+ON p.Id = op.PropertyId
+INNER JOIN dbo.PropertyHomeValue pv
+ON pv.PropertyId = op.PropertyId
+INNER JOIN dbo.PropertyFinance f
+ON f.PropertyId = pv.PropertyId
+WHERE op.OwnerId = 1426 and pv.IsActive = 1
 
 --- d. Display all the jobs available
 
-select *
-from dbo.Job j
-Where j.JobStatusId = 1
+SELECT j.Id AS JobId, j.JobDescription
+FROM dbo.Job j
+WHERE j.JobStatusId = 1
 
 
 
 
 ---Display all property names, current tenants first and last names and rental payments per week/ fortnight/month for the properties in question a). 
 
-select p.Name as PropertyName, p.Id as PropertyID, tp.PaymentAmount, op.OwnerId, ps.FirstName, ps.LastName, tp.IsActive, tp.*, pv.*, op.*,
-Case
-	When tp.PaymentFrequencyId = 1 then 'Weekly'
+SELECT p.Name AS PropertyName, p.Id AS PropertyID, tp.PaymentAmount, op.OwnerId, ps.FirstName, ps.LastName, tp.IsActive,
+CASE
+	WHEN tp.PaymentFrequencyId = 1 THEN 'Weekly'
 
-	When tp.PaymentFrequencyId = 2 then 'Fortnightly'
+	WHEN tp.PaymentFrequencyId = 2 THEN 'Fortnightly'
 
-	When tp.PaymentFrequencyId = 3 then 'Monthly'
+	WHEN tp.PaymentFrequencyId = 3 THEN 'Monthly'
 End
-As 'PaymentFrequency'
+AS 'PaymentFrequency'
 
-from dbo.Property p
-inner join dbo.OwnerProperty op
-on p.Id = op.PropertyId
-inner join dbo.PropertyHomeValue pv
-on pv.PropertyId = op.PropertyId
-inner join dbo.TenantProperty tp
-on tp.PropertyId = op.PropertyId
-inner join dbo.Person ps
-on ps.Id = tp.TenantId
-where op.OwnerId = 1426 and pv.IsActive = 1 and tp.IsActive = 1
+FROM dbo.Property p
+INNER JOIN dbo.OwnerProperty op
+ON p.Id = op.PropertyId
+INNER JOIN dbo.PropertyHomeValue pv
+ON pv.PropertyId = op.PropertyId
+INNER JOIN dbo.TenantProperty tp
+ON tp.PropertyId = op.PropertyId
+INNER JOIN dbo.Person ps
+ON ps.Id = tp.TenantId
+WHERE op.OwnerId = 1426 and pv.IsActive = 1 and tp.IsActive = 1
 
 
 
